@@ -23,7 +23,7 @@ class ImageChooserMixin(HasTraits):
     )
 
     dockercustomimage_regex = Unicode(
-        "^imagedata/jupyter-[a-z0-9:\.-]+$",
+        "^videoamp/notebook-[a-z0-9:\.-]+$",
         config = True,
         help = "Regular expression to validate custom image specifications"
     )
