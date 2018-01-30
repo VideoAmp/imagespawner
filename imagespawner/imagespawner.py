@@ -22,18 +22,12 @@ class ImageChooserMixin(HasTraits):
         help = "Predefined Docker images."
     )
 
-    dockercustomimage_regex = Unicode(
-        "^videoamp/notebook-[a-z0-9:\.-]+$",
-        config = True,
-        help = "Regular expression to validate custom image specifications"
-    )
-
     form_template = Unicode("""
         <label for="dockerimage">Select a Docker image:</label>
         <select class="form-control" name="dockerimage" required autofocus>
             {option_template}
         </select>
-        <label for="dockercustomimage">Alternatively enter an image specification (must match regular expression <code>{image_regex}</code>):</label>
+        <label for="dockercustomimage">Alternatively enter an image name:</label>
         <input class="form-control" type="text" name="dockercustomimage" />
         """,
         config = True,
@@ -50,12 +44,11 @@ class ImageChooserMixin(HasTraits):
     @default('options_form')
     def _options_form(self):
         """Return the form with the drop-down menu."""
+        dockerimages = ['videoamp/notebook-{username}'.format(username=self.user.name)] + self.dockerimages
         options = ''.join([
-            self.option_template.format(image=di) for di in self.dockerimages
+            self.option_template.format(image=di) for di in dockerimages
         ])
-        image_regex = xhtml_escape(self.dockercustomimage_regex)
-        return self.form_template.format(
-            option_template=options, image_regex=image_regex)
+        return self.form_template.format(option_template=options)
 
     def options_from_form(self, formdata):
         """Parse the submitted form data and turn it into the correct
@@ -69,9 +62,6 @@ class ImageChooserMixin(HasTraits):
 
         if dockercustomimage:
             dockerimage = dockercustomimage
-        if (dockerimage not in self.dockerimages and
-            not match(self.dockercustomimage_regex, dockerimage)):
-                raise ValueError('Invalid Docker image specification')
 
         options = {
             'container_image': dockerimage,
